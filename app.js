@@ -1,41 +1,20 @@
-const http = require('node:http');
-const fs = require('node:fs');
+require('dotenv').config();
+const path = require('path');
 
-const routes = ['/', '/about', '/contact-me'];
+const express = require('express');
+const app = express();
 
-http.createServer((req, res) => {
-  const route = req.url;
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
-  if (routes.includes(route)) {
-    let file = null;
-    if (route === '/') {
-      file = 'index.html';
-    } else {
-      file = `${route.slice(1)}.html`;
-    }
+app.get('/about', (req, res) => res.sendFile(
+  path.join(__dirname, "about.html")
+));
 
-    fs.readFile(file, 'utf-8', (err, data) => {
-      if (err) return notFound(res);
+app.get('/contact-me', (req, res) => res.sendFile(
+  path.join(__dirname, "contact-me.html")
+));
 
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.write(data);
-      return res.end();
-    });
-  } else return notFound(res);
-}).listen(8080);
+app.use((req, res) => res.sendFile(path.join(__dirname, "404.html")));
 
-function notFound(response) {
-  fs.readFile('404.html', 'utf-8', (err, data) => {
-    if (err) {
-      response.writeHead(500, {'Content-Type': 'text/html'});
-      response.write('500 - Internal Server Error');
-      return response.end();
-    }
-
-    response.writeHead(404, {'Content-Type': 'text/html'});
-    response.write(data);
-    response.end();
-
-    return response; // returning the response for chain calls
-  });
-}
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Now listening on port ${port}!`));
